@@ -190,9 +190,11 @@ const VisualThinkingMap: React.FC = () => {
     };
 
     // Create placeholder answer node (positioned below the clicked position)
+    // Since answer nodes are 400px wide (vs 200px for questions), we need to adjust the x position
+    // to make the left edge align with the clicked position
     const answerNode: ConversationNode = {
       id: answerNodeId,
-      x: x, // Use the clicked x position
+      x: x + 100, // Adjust for wider answer node (400px vs 200px = +200px/2 = +100px offset)
       y: y + 180, // Position below the clicked position
       text: '🤔 AI cevabı alınıyor...',
       type: 'answer',
@@ -396,9 +398,10 @@ const VisualThinkingMap: React.FC = () => {
         const data = await response.json();
         
         // Create answer node at the clicked position (below where user clicked)
+        // Since answer nodes are 400px wide (vs 200px for questions), adjust x position
         const answerNode: ConversationNode = {
           id: `answer-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          x: x, // Use the clicked x position
+          x: x + 100, // Adjust for wider answer node (400px vs 200px = +200px/2 = +100px offset)
           y: y + 180, // Position below the clicked position
           text: data.response,
           type: 'answer',
