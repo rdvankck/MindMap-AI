@@ -184,11 +184,11 @@ const VisualThinkingMap: React.FC = () => {
       level: 0
     };
 
-    // Create placeholder answer node
+    // Create placeholder answer node (positioned below the question)
     const answerNode: ConversationNode = {
       id: answerNodeId,
-      x: x + 250,
-      y: y + 50,
+      x: x,
+      y: y + 180, // Position below the question (question height ~80px + padding)
       text: '🤔 AI cevabı alınıyor...',
       type: 'answer',
       children: [],
@@ -339,11 +339,11 @@ const VisualThinkingMap: React.FC = () => {
         // Find the question node to get its position
         const questionNode = nodes.find(n => n.id === nodeId);
         if (questionNode) {
-          // Create answer node near the question
+          // Create answer node below the question
           const answerNode: ConversationNode = {
             id: `answer-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-            x: questionNode.x + 250,
-            y: questionNode.y + 50,
+            x: questionNode.x,
+            y: questionNode.y + 180, // Position below the question
             text: data.response,
             type: 'answer',
             children: [],
@@ -390,11 +390,11 @@ const VisualThinkingMap: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         
-        // Create answer node at clicked position
+        // Create answer node below the question node
         const answerNode: ConversationNode = {
           id: `answer-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          x: x,
-          y: y,
+          x: node.x, // Same x position as the question
+          y: node.y + 180, // Position below the question
           text: data.response,
           type: 'answer',
           children: [],
