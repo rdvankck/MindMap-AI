@@ -171,11 +171,16 @@ const VisualThinkingMap: React.FC = () => {
     const questionNodeId = `question-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const answerNodeId = `answer-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-    // Create question node
+    // Find the parent node to position the question near it
+    const parentNode = nodes.find(n => n.id === isAddingQuestion);
+    const questionX = parentNode ? parentNode.x + 250 : x;
+    const questionY = parentNode ? parentNode.y + 50 : y;
+
+    // Create question node (positioned near the parent)
     const questionNode: ConversationNode = {
       id: questionNodeId,
-      x: x,
-      y: y,
+      x: questionX,
+      y: questionY,
       text: questionInput.trim(),
       type: 'question',
       children: [answerNodeId],
@@ -184,11 +189,11 @@ const VisualThinkingMap: React.FC = () => {
       level: 0
     };
 
-    // Create placeholder answer node (positioned below the question)
+    // Create placeholder answer node (positioned below the clicked position)
     const answerNode: ConversationNode = {
       id: answerNodeId,
-      x: x,
-      y: y + 180, // Position below the question (question height ~80px + padding)
+      x: x, // Use the clicked x position
+      y: y + 180, // Position below the clicked position
       text: '🤔 AI cevabı alınıyor...',
       type: 'answer',
       children: [],
@@ -390,11 +395,11 @@ const VisualThinkingMap: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         
-        // Create answer node below the question node
+        // Create answer node at the clicked position (below where user clicked)
         const answerNode: ConversationNode = {
           id: `answer-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          x: node.x, // Same x position as the question
-          y: node.y + 180, // Position below the question
+          x: x, // Use the clicked x position
+          y: y + 180, // Position below the clicked position
           text: data.response,
           type: 'answer',
           children: [],
