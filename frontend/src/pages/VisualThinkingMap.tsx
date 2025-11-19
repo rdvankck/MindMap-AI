@@ -171,16 +171,11 @@ const VisualThinkingMap: React.FC = () => {
     const questionNodeId = `question-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const answerNodeId = `answer-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-    // Find the parent node to position the question near it
-    const parentNode = nodes.find(n => n.id === isAddingQuestion);
-    const questionX = parentNode ? parentNode.x + 250 : x;
-    const questionY = parentNode ? parentNode.y + 50 : y;
-
-    // Create question node (positioned near the parent)
+    // Create question node (positioned exactly where user clicked)
     const questionNode: ConversationNode = {
       id: questionNodeId,
-      x: questionX,
-      y: questionY,
+      x: x,
+      y: y,
       text: questionInput.trim(),
       type: 'question',
       children: [answerNodeId],
@@ -189,13 +184,13 @@ const VisualThinkingMap: React.FC = () => {
       level: 0
     };
 
-    // Create placeholder answer node (positioned below the clicked position)
+    // Create placeholder answer node (positioned below the question)
     // Since answer nodes are 400px wide (vs 200px for questions), we need to adjust the x position
-    // to make the left edge align with the clicked position
+    // to align with the question's center
     const answerNode: ConversationNode = {
       id: answerNodeId,
-      x: x + 100, // Adjust for wider answer node (400px vs 200px = +200px/2 = +100px offset)
-      y: y + 180, // Position below the clicked position
+      x: x, // Same x position as question (they'll be centered differently due to width)
+      y: y + 180, // Position below the question
       text: '🤔 AI cevabı alınıyor...',
       type: 'answer',
       children: [],
@@ -398,10 +393,10 @@ const VisualThinkingMap: React.FC = () => {
         const data = await response.json();
         
         // Create answer node at the clicked position (below where user clicked)
-        // Since answer nodes are 400px wide (vs 200px for questions), adjust x position
+        // Position it exactly where the user clicked (x position will be centered based on node width)
         const answerNode: ConversationNode = {
           id: `answer-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          x: x + 100, // Adjust for wider answer node (400px vs 200px = +200px/2 = +100px offset)
+          x: x, // Use the exact clicked x position
           y: y + 180, // Position below the clicked position
           text: data.response,
           type: 'answer',
