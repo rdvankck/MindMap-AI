@@ -1,0 +1,690 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      UserRole @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  workflows     Workflow[]
+  executions    WorkflowExecution[]
+  chatSessions  ChatSession[]
+  chatMessages  ChatMessage[]
+  conversations ConversationThread[]
+  fileUploads   FileUpload[]
+  settings      UserSettings?
+  invalidations DependencyInvalidation[]
+  recomputationPlans RecomputationPlan[]
+  optimizationSuggestions OptimizationSuggestion[]
+  
+  @@map("users")
+}
+
+// User role enum
+enum UserRole {
+  ADMIN
+  USER
+}
+
+// Workflow model
+model Workflow {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  userId      String
+  isPublic    Boolean  @default(false)
+  nodes       Json     @default("[]")
+  edges       Json     @default("[]")
+  metadata    Json     @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user       User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  executions WorkflowExecution[]
+  chatSessions ChatSession[]
+  conversations ConversationThread[]
+  templates  WorkflowTemplate[]
+  invalidations DependencyInvalidation[]
+  recomputationPlans RecomputationPlan[]
+  optimizationSuggestions OptimizationSuggestion[]
+  graphCache  DependencyGraphCache?
+  nodeCaches  NodeDependencyCache[]
+
+  @@index([userId])
+  @@index([isPublic])
+  @@map("workflows")
+}
+
+// Workflow execution model
+model WorkflowExecution {
+  id            String           @id @default(uuid())
+  workflowId    String
+  userId        String
+  status        ExecutionStatus  @default(PENDING)
+  inputs        Json             @default("{}")
+  outputs       Json             @default("{}")
+  nodeExecutions Json            @default("[]")
+  startedAt     DateTime         @default(now())
+  completedAt   DateTime?
+  error         String?
+  metadata      Json             @default("{}")
+
+  // Relations
+  workflow   Workflow       @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  logs       ExecutionLog[]
+
+  @@index([workflowId])
+  @@index([userId])
+  @@index([status])
+  @@map("workflow_executions")
+}
+
+// Execution status enum
+enum ExecutionStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+// Execution log model
+model ExecutionLog {
+  id                String   @id @default(uuid())
+  workflowExecutionId String
+  nodeId            String
+  nodeType          String
+  status            ExecutionStatus
+  inputs            Json     @default("{}")
+  outputs           Json     @default("{}")
+  startedAt         DateTime @default(now())
+  completedAt       DateTime?
+  error             String?
+  metadata          Json     @default("{}")
+
+  // Relations
+  workflowExecution WorkflowExecution @relation(fields: [workflowExecutionId], references: [id], onDelete: Cascade)
+
+  @@index([workflowExecutionId])
+  @@index([nodeId])
+  @@index([status])
+  @@map("execution_logs")
+}
+
+// Chat session model
+model ChatSession {
+  id        String   @id @default(uuid())
+  userId    String
+  workflowId String?
+  title     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workflow Workflow?     @relation(fields: [workflowId], references: [id], onDelete: SetNull)
+  messages ChatMessage[]
+
+  @@index([userId])
+  @@index([workflowId])
+  @@map("chat_sessions")
+}
+
+// Chat message model
+model ChatMessage {
+  id        String            @id @default(uuid())
+  sessionId String
+  userId    String
+  role      ChatMessageRole
+  content   String
+  metadata  Json              @default("{}")
+  timestamp DateTime          @default(now())
+
+  // Relations
+  session ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([userId])
+  @@map("chat_messages")
+}
+
+// Chat message role enum
+enum ChatMessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+// User settings model
+model UserSettings {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  theme        Theme    @default(AUTO)
+  language     String   @default("en")
+  notifications Json    @default("{}")
+  llm          Json     @default("{}")
+  ui           Json     @default("{}")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_settings")
+}
+
+// Theme enum
+enum Theme {
+  LIGHT
+  DARK
+  AUTO
+}
+
+// File upload model
+model FileUpload {
+  id           String   @id @default(uuid())
+  originalName String
+  fileName     String
+  mimeType     String
+  size         Int
+  path         String
+  uploadedBy   String
+  uploadedAt   DateTime @default(now())
+  metadata     Json     @default("{}")
+
+  // Relations
+  user User @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+
+  @@index([uploadedBy])
+  @@map("file_uploads")
+}
+
+// Workflow template model
+model WorkflowTemplate {
+  id          String   @id @default(uuid())
+  workflowId  String
+  name        String
+  description String
+  category    String
+  tags        String[] @default([])
+  isPublic    Boolean  @default(true)
+  downloads   Int      @default(0)
+  rating      Float    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  workflow Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@index([category])
+  @@index([isPublic])
+  @@index([downloads])
+  @@map("workflow_templates")
+}
+
+// API key model for external integrations
+model ApiKey {
+  id          String      @id @default(uuid())
+  userId      String
+  name        String
+  provider    String
+  apiKey      String // encrypted
+  permissions String[]   @default([])
+  isActive    Boolean     @default(true)
+  lastUsedAt  DateTime?
+  expiresAt   DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([provider])
+  @@map("api_keys")
+}
+
+// Node template model
+model NodeTemplate {
+  id          String @id @default(uuid())
+  type        String @unique
+  name        String
+  description String
+  category    String
+  icon        String
+  inputs      Json   @default("[]")
+  outputs     Json   @default("[]")
+  config      Json   @default("[]")
+  defaultConfig Json  @default("{}")
+  isBuiltIn   Boolean @default(true)
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@index([type])
+  @@map("node_templates")
+}
+
+// Workflow execution cache model
+model ExecutionCache {
+  id           String   @id @default(uuid())
+  cacheKey     String   @unique
+  workflowId   String
+  nodeConfig   Json
+  inputs       Json
+  outputs      Json
+  metadata     Json     @default("{}")
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  accessedAt   DateTime @default(now())
+
+  @@index([cacheKey])
+  @@index([workflowId])
+  @@index([expiresAt])
+  @@map("execution_cache")
+}
+
+// Conversation thread model for node-based conversations
+model ConversationThread {
+  id          String   @id @default(uuid())
+  nodeId      String   // The workflow node this conversation belongs to
+  workflowId  String   // The parent workflow
+  userId      String   // The user who owns this conversation
+  title       String
+  status      ConversationStatus @default(ACTIVE)
+  context     Json     @default("{}") // Conversation context and metadata
+  settings    Json     @default("{}") // Conversation-specific settings
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  closedAt    DateTime?
+
+  // Relations
+  workflow    Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages    ConversationMessage[]
+  branches    ConversationBranch[]
+  contextSnapshots ContextSnapshot[]
+
+  @@index([nodeId])
+  @@index([workflowId])
+  @@index([userId])
+  @@index([status])
+  @@map("conversation_threads")
+}
+
+// Conversation status enum
+enum ConversationStatus {
+  ACTIVE
+  PAUSED
+  CLOSED
+  ARCHIVED
+}
+
+// Conversation message model
+model ConversationMessage {
+  id             String               @id @default(uuid())
+  threadId       String
+  nodeId         String               // The node that generated this message
+  parentMessageId String?             // For branching conversations
+  role           ConversationRole     // USER, ASSISTANT, SYSTEM, TOOL
+  content        String               @db.Text
+  tokenCount     Int                  @default(0)
+  metadata       Json                 @default("{}") // Contains tool calls, function results, etc.
+  timestamp      DateTime             @default(now())
+  isSystem       Boolean              @default(false)
+  isDeleted      Boolean              @default(false)
+  version        Int                  @default(1)
+  
+  // Relations
+  thread         ConversationThread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  parentMessage  ConversationMessage? @relation("MessageBranch", fields: [parentMessageId], references: [id])
+  childMessages  ConversationMessage[] @relation("MessageBranch")
+  contextSnapshot ContextSnapshot?
+
+  @@index([threadId])
+  @@index([nodeId])
+  @@index([parentMessageId])
+  @@index([timestamp])
+  @@index([role])
+  @@map("conversation_messages")
+}
+
+// Conversation role enum
+enum ConversationRole {
+  USER
+  ASSISTANT
+  SYSTEM
+  TOOL
+  FUNCTION
+}
+
+// Conversation branch model for handling conversation forks
+model ConversationBranch {
+  id            String   @id @default(uuid())
+  threadId      String
+  branchPointId String   // The message where this branch started
+  branchName    String   // User-friendly name for the branch
+  isActive      Boolean  @default(true)
+  metadata      Json     @default("{}")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  thread        ConversationThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  branchPoint   ConversationMessage @relation(fields: [branchPointId], references: [id])
+
+  @@index([threadId])
+  @@index([branchPointId])
+  @@map("conversation_branches")
+}
+
+// Context snapshot model for conversation history and versioning
+model ContextSnapshot {
+  id              String   @id @default(uuid())
+  threadId        String
+  messageId       String?  // Optional: message that triggered this snapshot
+  context         Json     // The complete conversation context at this point
+  tokenCount      Int      @default(0)
+  contextStrategy String   @default("full") // full, summary, sliding_window, etc.
+  metadata        Json     @default("{}")
+  createdAt       DateTime @default(now())
+  expiresAt       DateTime?
+  
+  // Relations
+  thread          ConversationThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  message         ConversationMessage? @relation(fields: [messageId], references: [id])
+
+  @@index([threadId])
+  @@index([messageId])
+  @@index([expiresAt])
+  @@map("context_snapshots")
+}
+
+// LLM context configuration model
+model LLMContextConfig {
+  id                  String   @id @default(uuid())
+  name                String   @unique
+  provider            String   // openai, anthropic, ollama, etc.
+  model               String
+  maxTokens           Int      @default(4096)
+  contextWindow       Int      @default(8192)
+  systemPrompt        String?  @db.Text
+  contextStrategy     ContextStrategy @default(FULL)
+  tokenCountingMethod String   @default("provider") // provider, tiktoken, custom
+  summarizationConfig Json     @default("{}")
+  isActive            Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  @@index([provider])
+  @@index([model])
+  @@index([isActive])
+  @@map("llm_context_configs")
+}
+
+// Context strategy enum
+enum ContextStrategy {
+  FULL           // Include all messages up to context limit
+  SLIDING_WINDOW // Keep most recent messages within context limit
+  SUMMARIZATION  // Summarize older messages
+  SELECTIVE      // Selectively include important messages
+  HYBRID         // Combination of strategies
+}
+
+// Conversation statistics model for analytics
+model ConversationStats {
+  id                String   @id @default(uuid())
+  threadId          String   @unique
+  totalMessages     Int      @default(0)
+  totalTokens       Int      @default(0)
+  avgResponseTime   Float    @default(0) // in milliseconds
+  longestResponse   Int      @default(0) // in milliseconds
+  userMessages      Int      @default(0)
+  assistantMessages Int      @default(0)
+  systemMessages    Int      @default(0)
+  toolMessages      Int      @default(0)
+  branchCount       Int      @default(0)
+  lastActivityAt    DateTime @default(now())
+  metadata          Json     @default("{}")
+  updatedAt         DateTime @updatedAt
+  
+  @@index([threadId])
+  @@index([lastActivityAt])
+  @@map("conversation_stats")
+}
+
+// Dependency tracking models
+
+// Dependency invalidation event model
+model DependencyInvalidation {
+  id             String   @id @default(uuid())
+  workflowId     String
+  nodeId         String
+  changeType     InvalidChangeType
+  reason         String
+  affectedNodes  Json     @default("[]")
+  cascadeNodes   Json     @default("[]")
+  status         InvalidStatus @default(PENDING)
+  metadata       Json     @default("{}")
+  processedAt    DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  // Relations
+  workflow       Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  recomputationPlans RecomputationPlan[]
+  
+  @@index([workflowId])
+  @@index([nodeId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("dependency_invalidations")
+}
+
+// Invalid change type enum
+enum InvalidChangeType {
+  CONTENT
+  CONFIG
+  CONNECTION
+  DELETION
+}
+
+// Invalid status enum
+enum InvalidStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+// Recomputation plan model
+model RecomputationPlan {
+  id                  String   @id @default(uuid())
+  workflowId          String
+  rootCauseNodeId     String
+  invalidationEventId String
+  executionOrder      Json     @default("[]")
+  parallelGroups      Json     @default("[]")
+  estimatedCost       Json     @default("{}")
+  priority            PlanPriority @default(MEDIUM)
+  status              PlanStatus @default(PENDING)
+  progress            Json     @default("{\"completedNodes\": 0, \"totalNodes\": 0}")
+  result              Json?
+  errorMessage        String?
+  startedAt           DateTime?
+  completedAt         DateTime?
+  metadata            Json     @default("{}")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  // Relations
+  workflow            Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  invalidationEvent   DependencyInvalidation @relation(fields: [invalidationEventId], references: [id], onDelete: Cascade)
+  executions          RecomputationExecution[]
+  
+  @@index([workflowId])
+  @@index([invalidationEventId])
+  @@index([status])
+  @@index([priority])
+  @@index([createdAt])
+  @@map("recomputation_plans")
+}
+
+// Plan priority enum
+enum PlanPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+// Plan status enum
+enum PlanStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+  PAUSED
+}
+
+// Recomputation execution model
+model RecomputationExecution {
+  id            String   @id @default(uuid())
+  planId        String
+  nodeId        String
+  status        ExecStatus @default(PENDING)
+  inputs        Json     @default("{}")
+  outputs       Json?
+  errorMessage  String?
+  executionTime Int?     // in milliseconds
+  tokenCount    Int?     // tokens used
+  startedAt     DateTime?
+  completedAt   DateTime?
+  metadata      Json     @default("{}")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  plan          RecomputationPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  
+  @@index([planId])
+  @@index([nodeId])
+  @@index([status])
+  @@map("recomputation_executions")
+}
+
+// Execution status enum
+enum ExecStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+// Dependency graph cache model
+model DependencyGraphCache {
+  id            String   @id @default(uuid())
+  workflowId    String   @unique
+  graphData     Json     // Serialized dependency graph
+  nodes         Json     @default("[]")
+  edges         Json     @default("[]")
+  metadata      Json     @default("{}")
+  hash          String   // Content hash for cache invalidation
+  expiresAt     DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([workflowId])
+  @@index([expiresAt])
+  @@map("dependency_graph_cache")
+}
+
+// Node dependency cache model
+model NodeDependencyCache {
+  id            String   @id @default(uuid())
+  workflowId    String
+  nodeId        String
+  dependencies  Json     @default("[]")
+  dependents    Json     @default("[]")
+  hash          String   // Node content hash
+  metadata      Json     @default("{}")
+  expiresAt     DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@unique([workflowId, nodeId])
+  @@index([workflowId])
+  @@index([expiresAt])
+  @@map("node_dependency_cache")
+}
+
+// Optimization suggestion model
+model OptimizationSuggestion {
+  id            String   @id @default(uuid())
+  workflowId    String
+  type          SuggestionType
+  severity      SuggestionSeverity
+  title         String
+  description   String
+  affectedNodes Json     @default("[]")
+  recommendations Json   @default("[]")
+  estimatedImpact Json   @default("{}")
+  status        SuggestionStatus @default(PENDING)
+  implementedAt DateTime?
+  metadata      Json     @default("{}")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([workflowId])
+  @@index([type])
+  @@index([severity])
+  @@index([status])
+  @@map("optimization_suggestions")
+}
+
+// Suggestion type enum
+enum SuggestionType {
+  CIRCULAR_DEPENDENCY
+  EXCESSIVE_DEPENDENCIES
+  HIGH_FAN_OUT
+  PARALLELIZATION
+  CACHING
+  RESTRUCTURING
+  PERFORMANCE
+}
+
+// Suggestion severity enum
+enum SuggestionSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+// Suggestion status enum
+enum SuggestionStatus {
+  PENDING
+  REVIEWING
+  IMPLEMENTED
+  DISMISSED
+  AUTO_APPLIED
+}
