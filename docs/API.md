@@ -56,7 +56,7 @@ Send a message to AI and get a response with context awareness.
   "model": "llama-3.1-8b-instant",
   "conversationId": "conv-1234567890",
   "branchId": "main",
-  "context": "--- İlgili Önceki Sorular ---\nKullanıcı: What is machine learning?\nAsistan: Machine learning is a subset of AI...\n--- Devam Edilen Konu ---\nKullanıcı: Tell me more about AI\nAsistan: AI is a broad field..."
+  "context": "--- Related Previous Questions ---\nUser: What is machine learning?\nAssistant: Machine learning is a subset of AI...\n--- Continuing Topic ---\nUser: Tell me more about AI\nAssistant: AI is a broad field..."
 }
 ```
 
@@ -266,24 +266,24 @@ The API features an advanced context system that maintains conversation coherenc
 The `context` parameter in `/api/chat` should follow this format:
 
 ```
---- İlgili Önceki Sorular ---
-Kullanıcı: [Previous question 1]
-Asistan: [Previous answer 1]
-Kullanıcı: [Previous question 2]
-Asistan: [Previous answer 2]
+--- Related Previous Questions ---
+User: [Previous question 1]
+Assistant: [Previous answer 1]
+User: [Previous question 2]
+Assistant: [Previous answer 2]
 
---- Devam Edilen Konu ---
-Kullanıcı: [Current question 1]
-Asistan: [Current answer 1]
-Soru: [Related question]
-Cevap: [Related answer]
+--- Continuing Topic ---
+User: [Current question 1]
+Assistant: [Current answer 1]
+Question: [Related question]
+Answer: [Related answer]
 ```
 
 ### Context Processing Rules
 
-1. **System Message**: A Turkish system prompt is automatically added to provide context-aware responses
-2. **Previous Questions**: Marked with `[Önceki Soru]` and `[Önceki Cevap]` prefixes
-3. **Related Questions**: Marked with `[İlgili Soru]` and `[İlgili Cevap]` prefixes
+1. **System Message**: An English system prompt is automatically added to provide context-aware responses
+2. **Previous Questions**: Marked with `[Previous Question]` and `[Previous Answer]` prefixes
+3. **Related Questions**: Marked with `[Related Question]` and `[Related Answer]` prefixes
 4. **Current Messages**: Added without prefixes for the main conversation flow
 
 ## Error Handling
@@ -367,7 +367,7 @@ curl -X POST http://localhost:3002/api/chat \
     "model": "llama-3.1-8b-instant",
     "conversationId": "conv-demo",
     "branchId": "main",
-    "context": "--- İlgili Önceki Sorular ---\nKullanıcı: What is machine learning?\nAsistan: Machine learning is a subset of AI that focuses on systems that learn from data...\n--- Devam Edilen Konu ---\nKullanıcı: Tell me about deep learning\nAsistan: Deep learning is a subfield of machine learning that uses neural networks..."
+    "context": "--- Related Previous Questions ---\nUser: What is machine learning?\nAssistant: Machine learning is a subset of AI that focuses on systems that learn from data...\n--- Continuing Topic ---\nUser: Tell me about deep learning\nAssistant: Deep learning is a subfield of machine learning that uses neural networks..."
   }'
 ```
 

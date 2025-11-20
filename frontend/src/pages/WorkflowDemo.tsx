@@ -18,12 +18,12 @@ const WorkflowDemo: React.FC = () => {
       
       if (response.ok) {
         const data = await response.json();
-        alert('🛠️ Workflow Editor başarıyla açıldı!\n\nID: ' + data.id);
+        alert('🛠️ Workflow Editor successfully opened!\n\nID: ' + data.id);
       } else {
-        alert('❌ Workflow oluşturulamadı.');
+        alert('❌ Workflow could not be created.');
       }
     } catch (error) {
-      alert('⚠️ Backend bağlantısı başarısız!\n\nBackend sunucusunun http://localhost:3002 adresinde çalıştığından emin olun.');
+      alert('⚠️ Backend connection failed!\n\nMake sure the backend server is running at http://localhost:3002.');
     }
   };
 
@@ -33,7 +33,7 @@ const WorkflowDemo: React.FC = () => {
   };
 
   const handleSettings = () => {
-    alert('⚙️ Settings sayfasına yönlendiriliyor...\n\nBu özellik auth sistemi gerektirir.');
+    alert('⚙️ Redirecting to Settings page...\n\nThis feature requires authentication system.');
   };
   return (
     <div style={{

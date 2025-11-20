@@ -191,7 +191,7 @@ const VisualThinkingMap: React.FC = () => {
       id: answerNodeId,
       x: x, // Same x position as question (they'll be centered differently due to width)
       y: y + 180, // Position below the question
-      text: '🤔 AI cevabı alınıyor...',
+      text: '🤔 AI response is being generated...',
       type: 'answer',
       children: [],
       parent: questionNodeId,
@@ -236,7 +236,7 @@ const VisualThinkingMap: React.FC = () => {
       console.error('Error getting AI response:', error);
       // Update answer node with error message
       setNodes(prev => prev.map(n => 
-        n.id === answerNodeId ? { ...n, text: '❌ Cevap alınamadı. Lütfen tekrar deneyin.' } : n
+        n.id === answerNodeId ? { ...n, text: '❌ Could not get response. Please try again.' } : n
       ));
     } finally {
       // Reset states
@@ -251,31 +251,31 @@ const VisualThinkingMap: React.FC = () => {
     const context: string[] = [];
     const mainPath: string[] = [];
     
-    // Ana konuşma yolunu bul (root'ten bu node'a kadar)
+    // Find main conversation path (from root to this node)
     const buildMainPath = (currentNodeId: string): void => {
       const node = nodes.find(n => n.id === currentNodeId);
       if (!node) return;
       
-      // Parent varsa önce parent'ı işle
+      // Process parent first if it exists
       if (node.parent) {
         buildMainPath(node.parent);
       }
       
-      // Bu node'u context'e ekle
+      // Add this node to context
       if (node.type === 'question') {
-        mainPath.push(`Kullanıcı: ${node.text}`);
+        mainPath.push(`User: ${node.text}`);
       } else if (node.type === 'answer') {
-        mainPath.push(`Asistan: ${node.text}`);
+        mainPath.push(`Assistant: ${node.text}`);
       }
     };
     
-    // İlgili kardeş soruları ve cevapları bul (aynı parent'a sahip olanlar)
-    // AMA SADECE ana düğüm DEĞİLSE - yani yan dallardaysa ilgili diğer dalları göster
+    // Find related sibling questions and answers (those with same parent)
+    // BUT ONLY if not main node - show related branches when in side branches
     const findRelatedConversations = (nodeId: string): void => {
       const currentNode = nodes.find(n => n.id === nodeId);
       if (!currentNode || !currentNode.parent) return;
       
-      // Eğer parent ana başlangıç düğümü ise, yan dalları gösterme
+      // If parent is main start node, don't show side branches
       if (currentNode.parent === 'start') {
         console.log('Parent is start node, skipping related conversations');
         return;
@@ -284,39 +284,39 @@ const VisualThinkingMap: React.FC = () => {
       const parentNode = nodes.find(n => n.id === currentNode.parent);
       if (!parentNode) return;
       
-      // Parent'ın tüm çocuklarını bul (kardeşler)
+      // Find all children of parent (siblings)
       const siblings = nodes.filter(n => 
         n.parent === currentNode.parent && 
         n.id !== currentNode.id
       );
       
       if (siblings.length > 0) {
-        context.push('\n--- İlgili Önceki Sorular ---');
+        context.push('\n--- Related Previous Questions ---');
         siblings.forEach(sibling => {
           if (sibling.type === 'question') {
-            // Kardeş sorunun cevabını da bul
+            // Find sibling question's answer too
             const siblingAnswer = nodes.find(n => 
               sibling.children.includes(n.id) && n.type === 'answer'
             );
             if (siblingAnswer) {
-              context.push(`Soru: ${sibling.text}`);
-              context.push(`Cevap: ${siblingAnswer.text}`);
+              context.push(`Question: ${sibling.text}`);
+              context.push(`Answer: ${siblingAnswer.text}`);
             }
           }
         });
-        context.push('--- Devam Edilen Konu ---');
+        context.push('--- Continuing Topic ---');
       }
     };
     
     console.log('Building enhanced context for node:', nodeId);
     
-    // İlgili kardeş konuşmaları ekle (ancak ana düğümde değilse)
+    // Add related sibling conversations (but not when on main node)
     findRelatedConversations(nodeId);
     
-    // Ana konuşma yolunu ekle
+    // Add main conversation path
     buildMainPath(nodeId);
     
-    // Ana yolu context'e ekle
+    // Add path to context
     mainPath.forEach(item => context.push(item));
     
     const finalContext = context.join('\n');
@@ -568,9 +568,9 @@ const VisualThinkingMap: React.FC = () => {
               color: '#666'
             }}
           >
-            ← Geri
+            ← Back
           </button>
-          <h2 style={{ margin: 0, color: '#333' }}>🧠 Görsel Düşünce Haritası</h2>
+          <h2 style={{ margin: 0, color: '#333' }}>🧠 Visual Thinking Map</h2>
         </div>
         
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center', paddingRight: '20px' }}>
@@ -590,7 +590,7 @@ const VisualThinkingMap: React.FC = () => {
               fontWeight: '500'
             }}
           >
-            {isAddingNode ? '📍 Konum Seç' : '➕ Yeni Konu'}
+            {isAddingNode ? '📍 Select Position' : '➕ New Topic'}
           </button>
           
           {isAddingNode && (
@@ -602,7 +602,7 @@ const VisualThinkingMap: React.FC = () => {
               fontSize: '12px',
               fontWeight: '500'
             }}>
-              🗺️ Haritaya tıklayın
+              🗺️ Click on the map
             </div>
           )}
           
@@ -615,7 +615,7 @@ const VisualThinkingMap: React.FC = () => {
               fontSize: '12px',
               fontWeight: '500'
             }}>
-              🎯 Genişletme için haritaya tıklayın
+              🎯 Click on the map to expand
             </div>
           )}
           
@@ -628,7 +628,7 @@ const VisualThinkingMap: React.FC = () => {
               fontSize: '12px',
               fontWeight: '500'
             }}>
-              📍 Haritada konum seçin (soru ve cevap)
+              📍 Select position on the map (question and answer)
             </div>
           )}
           
@@ -641,7 +641,7 @@ const VisualThinkingMap: React.FC = () => {
               fontSize: '12px',
               fontWeight: '500'
             }}>
-              ✋ Sürükleme modu
+              ✋ Dragging mode
             </div>
           )}
         </div>
@@ -789,7 +789,7 @@ const VisualThinkingMap: React.FC = () => {
                       fontWeight: '500'
                     }}
                   >
-                    {isProcessing ? '⏳' : '🚀'} Genişlet
+                    {isProcessing ? '⏳' : '🚀'} Expand
                   </button>
                 ) : (
                   <button
@@ -808,7 +808,7 @@ const VisualThinkingMap: React.FC = () => {
                       fontWeight: '500'
                     }}
                   >
-                    ➕ Soru Ekle
+                    ➕ Add Question
                   </button>
                 )}
                 
@@ -828,7 +828,7 @@ const VisualThinkingMap: React.FC = () => {
                     fontWeight: '500'
                   }}
                 >
-                  ✏️ Soru Yaz
+                  ✏️ Write Question
                 </button>
                 
                 {node.id !== 'start' && (
@@ -968,11 +968,11 @@ const VisualThinkingMap: React.FC = () => {
             width: '400px',
             boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
           }}>
-            <h3 style={{ marginTop: 0, color: '#333' }}>💭 Yeni Konu Ekle</h3>
+            <h3 style={{ marginTop: 0, color: '#333' }}>💭 Add New Topic</h3>
             <textarea
               value={nodeInput}
               onChange={(e) => setNodeInput(e.target.value)}
-              placeholder="Ne hakkında düşünmek istiyorsunuz?"
+              placeholder="What would you like to think about?"
               style={{
                 width: '100%',
                 height: '100px',
@@ -1001,7 +1001,7 @@ const VisualThinkingMap: React.FC = () => {
                   cursor: 'pointer'
                 }}
               >
-                İptal
+                Cancel
               </button>
               <button
                 onClick={addNewNode}
@@ -1043,11 +1043,11 @@ const VisualThinkingMap: React.FC = () => {
             width: '400px',
             boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
           }}>
-            <h3 style={{ marginTop: 0, color: '#333' }}>💬 Yeni Soru Ekle</h3>
+            <h3 style={{ marginTop: 0, color: '#333' }}>💬 Add New Question</h3>
             <textarea
               value={questionInput}
               onChange={(e) => setQuestionInput(e.target.value)}
-              placeholder="Yeni sorunuzu yazın..."
+              placeholder="Type your new question..."
               style={{
                 width: '100%',
                 height: '100px',
@@ -1076,7 +1076,7 @@ const VisualThinkingMap: React.FC = () => {
                   cursor: 'pointer'
                 }}
               >
-                İptal
+                Cancel
               </button>
               <button
                 onClick={() => {
@@ -1094,7 +1094,7 @@ const VisualThinkingMap: React.FC = () => {
                   cursor: !questionInput.trim() ? 'not-allowed' : 'pointer'
                 }}
               >
-                📍 Konum Seç
+                📍 Select Position
               </button>
             </div>
           </div>
@@ -1122,11 +1122,11 @@ const VisualThinkingMap: React.FC = () => {
             width: '400px',
             boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
           }}>
-            <h3 style={{ marginTop: 0, color: '#333' }}>✏️ Sorunuzu Yazın</h3>
+            <h3 style={{ marginTop: 0, color: '#333' }}>✏️ Write Your Question</h3>
             <textarea
               value={editText}
               onChange={(e) => setEditText(e.target.value)}
-              placeholder="Örnek: Kek nasıl yapılır?"
+              placeholder="Example: How to make a cake?"
               style={{
                 width: '100%',
                 height: '100px',
@@ -1154,7 +1154,7 @@ const VisualThinkingMap: React.FC = () => {
                   cursor: 'pointer'
                 }}
               >
-                İptal
+                Cancel
               </button>
               <button
                 onClick={saveEditedNode}

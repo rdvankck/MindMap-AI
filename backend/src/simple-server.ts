@@ -91,13 +91,13 @@ app.post('/api/chat', async (req, res) => {
       // Add system prompt for better context understanding
       messages.push({
         role: 'system',
-        content: `Sen görsel düşünce haritası için özel bir asistansin. Kullanıcı önceki sorularla ilgili bağlamı koruyarak cevap vermelisin. 
+        content: `You are a specialized assistant for visual thinking maps. You should provide responses while maintaining context related to previous questions.
         
-        Eğer "İlgili Önceki Sorular" bölümü varsa, bunlar aynı konu hakkında sorulmuş önceki sorulardir ve konunun bütünlüğünü anlamana yardımcı olur.
+        If there is a "Related Previous Questions" section, these are previous questions asked about the same topic and help you understand the topic's coherence.
         
-        "Devam Edilen Konu" bölümü ise mevcut konuşma akışını gösterir. 
+        The "Continuing Topic" section shows the current conversation flow. 
         
-        Lütfen cevaplarında bu bağlamı dikkate al ve tutarlı bir şekilde yanıt ver. Konu değiştirdiğini düşünüyorsan belirt ama mümkünse konu bütünlüğünü koru.`
+        Please consider this context in your responses and answer in a consistent manner. If you think the topic has changed, please indicate it, but try to maintain topic coherence if possible.`
       });
       
       // Process enhanced context
@@ -107,45 +107,45 @@ app.post('/api/chat', async (req, res) => {
         let isInMainSection = false;
         
         for (const line of contextLines) {
-          if (line.includes('--- İlgili Önceki Sorular ---')) {
+          if (line.includes('--- Related Previous Questions ---')) {
             isInRelatedSection = true;
             isInMainSection = false;
             continue;
-          } else if (line.includes('--- Devam Edilen Konu ---')) {
+          } else if (line.includes('--- Continuing Topic ---')) {
             isInRelatedSection = false;
             isInMainSection = true;
             continue;
           }
           
-          if (line.startsWith('Kullanıcı:')) {
-            const userMessage = line.replace('Kullanıcı: ', '');
+          if (line.startsWith('User:')) {
+            const userMessage = line.replace('User: ', '');
             if (isInRelatedSection) {
               messages.push({ 
                 role: 'user', 
-                content: `[Önceki Soru] ${userMessage}` 
+                content: `[Previous Question] ${userMessage}` 
               });
             } else {
               messages.push({ role: 'user', content: userMessage });
             }
-          } else if (line.startsWith('Asistan:')) {
-            const assistantMessage = line.replace('Asistan: ', '');
+          } else if (line.startsWith('Assistant:')) {
+            const assistantMessage = line.replace('Assistant: ', '');
             if (isInRelatedSection) {
               messages.push({ 
                 role: 'assistant', 
-                content: `[Önceki Cevap] ${assistantMessage}` 
+                content: `[Previous Answer] ${assistantMessage}` 
               });
             } else {
               messages.push({ role: 'assistant', content: assistantMessage });
             }
-          } else if (line.startsWith('Soru:')) {
+          } else if (line.startsWith('Question:')) {
             messages.push({ 
               role: 'user', 
-              content: `[İlgili Soru] ${line.replace('Soru: ', '')}` 
+              content: `[Related Question] ${line.replace('Question: ', '')}` 
             });
-          } else if (line.startsWith('Cevap:')) {
+          } else if (line.startsWith('Answer:')) {
             messages.push({ 
               role: 'assistant', 
-              content: `[İlgili Cevap] ${line.replace('Cevap: ', '')}` 
+              content: `[Related Answer] ${line.replace('Answer: ', '')}` 
             });
           }
         }

@@ -50,10 +50,10 @@ npm run dev
 
 Or start them individually:
 ```bash
-# Frontend (port 5173)
+# Frontend (port 3000)
 npm run dev:frontend
 
-# Backend (port 3001) 
+# Backend (port 3002) 
 npm run dev:backend
 ```
 
@@ -71,7 +71,7 @@ GROQ_TIMEOUT=120000
 DATABASE_URL=postgresql://your_db_url
 
 # Server Configuration
-PORT=3001
+PORT=3002
 NODE_ENV=development
 ```
 
@@ -79,7 +79,7 @@ Get your free Groq API key from [https://console.groq.com/keys](https://console.
 
 ## 🎯 Usage
 
-1. **Open the application** at http://localhost:5173
+1. **Open the application** at http://localhost:3000
 2. **Start with a question** in the initial node
 3. **Click the expand button** to get AI responses at any position
 4. **Use the + button** on answer nodes to add follow-up questions
@@ -94,6 +94,7 @@ The application features an advanced context system that:
 - **Remembers related questions** from the same branch
 - **Provides topic coherence** for intelligent responses
 - **Supports multi-branch conversations** with independent contexts
+- **Separates main topic** from branch contexts for focused discussions
 
 ## 🛠️ Technology Stack
 
@@ -130,6 +131,7 @@ The application features an advanced context system that:
 - Maintains context across branches
 - Intelligent topic coherence
 - Related question awareness
+- Main topic vs branch separation
 
 ## 🔧 Development
 
