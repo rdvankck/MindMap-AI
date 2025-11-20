@@ -1,661 +1,412 @@
-# API Documentation
+# MindMap AI - API Documentation
 
 ## Base URL
 
-- Development: `http://localhost:3001`
-- Production: `https://your-domain.com/api`
+- Development: `http://localhost:3002`
+- Production: `https://your-domain.com`
 
-## Authentication
+## Overview
 
-All protected endpoints require a JWT token in the Authorization header:
-
-```
-Authorization: Bearer <your-jwt-token>
-```
+MindMap AI provides a simple REST API for creating visual thinking maps with AI-powered conversations. The API allows you to create conversation nodes, expand them with AI responses, and manage conversation branches.
 
 ## Endpoints
 
-### Authentication
+### Health Check
 
-#### POST `/auth/register`
-Register a new user account.
-
-**Request Body:**
-```json
-{
-  "email": "user@example.com",
-  "password": "password123",
-  "name": "John Doe"
-}
-```
+#### GET `/health`
+Check if the API server is running.
 
 **Response:**
 ```json
 {
-  "success": true,
-  "data": {
-    "user": {
-      "id": "uuid",
-      "email": "user@example.com",
-      "name": "John Doe",
-      "role": "user"
-    },
-    "tokens": {
-      "accessToken": "jwt-token",
-      "refreshToken": "refresh-token",
-      "expiresIn": 604800
-    }
-  }
-}
-```
-
-#### POST `/auth/login`
-Authenticate a user.
-
-**Request Body:**
-```json
-{
-  "email": "user@example.com",
-  "password": "password123"
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "user": {
-      "id": "uuid",
-      "email": "user@example.com",
-      "name": "John Doe",
-      "role": "user"
-    },
-    "tokens": {
-      "accessToken": "jwt-token",
-      "refreshToken": "refresh-token",
-      "expiresIn": 604800
-    }
-  }
-}
-```
-
-### Workflows
-
-#### GET `/workflows`
-Get all workflows for the authenticated user.
-
-**Query Parameters:**
-- `page`: Page number (default: 1)
-- `limit`: Items per page (default: 20)
-- `search`: Search term
-- `sortBy`: Sort field (default: "updatedAt")
-- `sortOrder`: Sort order (asc/desc, default: "desc")
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": "uuid",
-      "name": "My Workflow",
-      "description": "A sample workflow",
-      "isPublic": false,
-      "metadata": {
-        "tags": ["ai", "automation"],
-        "category": "productivity"
-      },
-      "createdAt": "2024-01-01T00:00:00.000Z",
-      "updatedAt": "2024-01-01T00:00:00.000Z"
-    }
-  ],
-  "pagination": {
-    "page": 1,
-    "limit": 20,
-    "total": 50,
-    "totalPages": 3
-  }
-}
-```
-
-#### POST `/workflows`
-Create a new workflow.
-
-**Request Body:**
-```json
-{
-  "name": "New Workflow",
-  "description": "Description",
-  "isPublic": false,
-  "nodes": [],
-  "edges": [],
-  "metadata": {
-    "tags": ["tag1", "tag2"],
-    "category": "productivity"
-  }
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "id": "uuid",
-    "name": "New Workflow",
-    "description": "Description",
-    "isPublic": false,
-    "nodes": [],
-    "edges": [],
-    "metadata": {
-      "tags": ["tag1", "tag2"],
-      "category": "productivity",
-      "version": "1.0.0"
-    },
-    "createdAt": "2024-01-01T00:00:00.000Z",
-    "updatedAt": "2024-01-01T00:00:00.000Z"
-  }
-}
-```
-
-#### GET `/workflows/:id`
-Get a specific workflow.
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "id": "uuid",
-    "name": "My Workflow",
-    "description": "Description",
-    "isPublic": false,
-    "nodes": [
-      {
-        "id": "node-uuid",
-        "type": "llm",
-        "position": { "x": 100, "y": 100 },
-        "data": {
-          "label": "LLM Node",
-          "config": {
-            "provider": "openai",
-            "model": "gpt-4",
-            "temperature": 0.7
-          }
-        }
-      }
-    ],
-    "edges": [],
-    "metadata": {},
-    "createdAt": "2024-01-01T00:00:00.000Z",
-    "updatedAt": "2024-01-01T00:00:00.000Z"
-  }
-}
-```
-
-#### PUT `/workflows/:id`
-Update a workflow.
-
-**Request Body:** Same as POST `/workflows`
-
-**Response:** Same as GET `/workflows/:id`
-
-#### DELETE `/workflows/:id`
-Delete a workflow.
-
-**Response:**
-```json
-{
-  "success": true,
-  "message": "Workflow deleted successfully"
-}
-```
-
-#### POST `/workflows/:id/execute`
-Execute a workflow.
-
-**Request Body:**
-```json
-{
-  "inputs": {
-    "input1": "value1",
-    "input2": "value2"
+  "status": "ok",
+  "timestamp": "2024-01-01T00:00:00.000Z",
+  "uptime": 3600,
+  "memory": {
+    "rss": 50331648,
+    "heapTotal": 20971520,
+    "heapUsed": 15728640,
+    "external": 1048576
   },
-  "options": {
-    "async": false,
-    "webhookUrl": "https://example.com/webhook",
-    "timeout": 300000
-  }
+  "version": "1.0.0"
 }
 ```
+
+### API Info
+
+#### GET `/api`
+Get basic API information.
 
 **Response:**
 ```json
 {
-  "success": true,
-  "data": {
-    "executionId": "uuid",
-    "status": "running",
-    "startedAt": "2024-01-01T00:00:00.000Z"
-  }
-}
-```
-
-### Nodes
-
-#### GET `/nodes/templates`
-Get all available node templates.
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": "uuid",
-      "type": "llm",
-      "name": "LLM Node",
-      "description": "Connect to language models",
-      "category": "ai",
-      "icon": "brain",
-      "inputs": [
-        {
-          "id": "prompt",
-          "name": "Prompt",
-          "type": "string",
-          "required": true
-        }
-      ],
-      "outputs": [
-        {
-          "id": "response",
-          "name": "Response",
-          "type": "string",
-          "required": false
-        }
-      ],
-      "config": [
-        {
-          "key": "provider",
-          "label": "Provider",
-          "type": "select",
-          "required": true,
-          "options": [
-            { "label": "OpenAI", "value": "openai" },
-            { "label": "Ollama", "value": "ollama" }
-          ]
-        }
-      ],
-      "defaultConfig": {
-        "provider": "openai",
-        "model": "gpt-4",
-        "temperature": 0.7
-      }
-    }
-  ]
-}
-```
-
-#### POST `/nodes/validate`
-Validate node configuration.
-
-**Request Body:**
-```json
-{
-  "type": "llm",
-  "config": {
-    "provider": "openai",
-    "model": "gpt-4",
-    "temperature": 0.7
-  }
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "isValid": true,
-    "errors": []
-  }
+  "message": "LLM Interface API is running"
 }
 ```
 
 ### Chat
 
-#### GET `/chat/sessions`
-Get all chat sessions for the user.
+#### POST `/api/chat`
+Send a message to AI and get a response with context awareness.
+
+**Request Body:**
+```json
+{
+  "message": "What is artificial intelligence?",
+  "model": "llama-3.1-8b-instant",
+  "conversationId": "conv-1234567890",
+  "branchId": "main",
+  "context": "--- İlgili Önceki Sorular ---\nKullanıcı: What is machine learning?\nAsistan: Machine learning is a subset of AI...\n--- Devam Edilen Konu ---\nKullanıcı: Tell me more about AI\nAsistan: AI is a broad field..."
+}
+```
 
 **Response:**
 ```json
 {
-  "success": true,
-  "data": [
+  "response": "Artificial Intelligence (AI) is a broad field of computer science focused on creating systems that can perform tasks that typically require human intelligence...",
+  "model": "llama-3.1-8b-instant",
+  "timestamp": "2024-01-01T00:00:00.000Z",
+  "conversationId": "conv-1234567890",
+  "branchId": "main"
+}
+```
+
+**Error Response:**
+```json
+{
+  "response": "I'm sorry, but I'm having trouble connecting to the AI service. Please check your API key and try again.",
+  "model": "llama-3.1-8b-instant",
+  "timestamp": "2024-01-01T00:00:00.000Z",
+  "conversationId": "conv-1234567890",
+  "branchId": "main",
+  "error": "groq_connection_failed"
+}
+```
+
+### Workflows
+
+#### POST `/api/workflows`
+Create a new workflow (currently creates mock workflows).
+
+**Request Body:**
+```json
+{
+  "name": "My Workflow",
+  "description": "A sample workflow",
+  "nodes": [
     {
-      "id": "uuid",
-      "title": "Chat Session 1",
-      "workflowId": "uuid",
-      "createdAt": "2024-01-01T00:00:00.000Z",
-      "updatedAt": "2024-01-01T00:00:00.000Z",
-      "messageCount": 10
+      "id": "node-1",
+      "type": "llm",
+      "position": { "x": 100, "y": 100 },
+      "data": { "label": "Start Node" }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "source": "node-1",
+      "target": "node-2"
     }
   ]
 }
 ```
 
-#### POST `/chat/sessions`
-Create a new chat session.
+**Response:**
+```json
+{
+  "id": "demo-1234567890",
+  "name": "My Workflow",
+  "description": "A sample workflow",
+  "nodes": [],
+  "edges": [],
+  "status": "draft",
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z"
+}
+```
+
+### Conversations
+
+#### POST `/api/conversations`
+Create a new conversation.
 
 **Request Body:**
 ```json
 {
-  "title": "New Chat Session",
-  "workflowId": "uuid"
+  "title": "AI Learning Session",
+  "userId": "user-123"
 }
 ```
 
 **Response:**
 ```json
 {
-  "success": true,
-  "data": {
-    "id": "uuid",
-    "title": "New Chat Session",
-    "workflowId": "uuid",
-    "messages": [],
-    "createdAt": "2024-01-01T00:00:00.000Z",
-    "updatedAt": "2024-01-01T00:00:00.000Z"
-  }
+  "id": "conv-1234567890",
+  "title": "AI Learning Session",
+  "userId": "user-123",
+  "status": "active",
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z",
+  "branches": []
 }
 ```
 
-#### GET `/chat/sessions/:id/messages`
-Get messages for a specific chat session.
+#### GET `/api/conversations/:conversationId`
+Get a conversation with its branches (mock data).
 
 **Response:**
 ```json
 {
-  "success": true,
-  "data": [
+  "id": "conv-1234567890",
+  "title": "Demo Conversation",
+  "userId": "user-123",
+  "status": "active",
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z",
+  "branches": [
     {
-      "id": "uuid",
-      "role": "user",
-      "content": "Hello!",
-      "timestamp": "2024-01-01T00:00:00.000Z"
+      "id": "main",
+      "conversationId": "conv-1234567890",
+      "name": "Main Branch",
+      "parentId": null,
+      "data": {
+        "messages": [
+          {
+            "id": "1",
+            "sender": "user",
+            "text": "Hello!",
+            "timestamp": "2024-01-01T00:00:00.000Z"
+          },
+          {
+            "id": "2",
+            "sender": "ai",
+            "text": "Hi there! How can I help you today?",
+            "timestamp": "2024-01-01T00:00:00.000Z"
+          }
+        ]
+      },
+      "isActive": true
     },
     {
-      "id": "uuid",
-      "role": "assistant",
-      "content": "Hi there! How can I help you?",
-      "timestamp": "2024-01-01T00:00:00.000Z"
+      "id": "branch-1",
+      "conversationId": "conv-1234567890",
+      "name": "Alternative Path",
+      "parentId": "main",
+      "data": {
+        "messages": [
+          {
+            "id": "1",
+            "sender": "user",
+            "text": "Hello!",
+            "timestamp": "2024-01-01T00:00:00.000Z"
+          },
+          {
+            "id": "2",
+            "sender": "ai",
+            "text": "Hello! What specific topic would you like to explore?",
+            "timestamp": "2024-01-01T00:00:00.000Z"
+          }
+        ]
+      },
+      "isActive": false
     }
   ]
 }
 ```
 
-#### POST `/chat/sessions/:id/messages`
-Send a message in a chat session.
+### Branches
+
+#### POST `/api/conversations/:conversationId/branches`
+Create a new branch in a conversation.
 
 **Request Body:**
 ```json
 {
-  "content": "What's the weather today?",
-  "context": {
-    "additionalData": "value"
-  }
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
+  "name": "Deep Dive Branch",
+  "parentId": "main",
   "data": {
-    "message": {
-      "id": "uuid",
-      "role": "user",
-      "content": "What's the weather today?",
-      "timestamp": "2024-01-01T00:00:00.000Z"
-    },
-    "response": {
-      "id": "uuid",
-      "role": "assistant",
-      "content": "I'll help you check the weather...",
-      "timestamp": "2024-01-01T00:00:00.000Z"
-    }
+    "description": "Exploring a specific aspect in detail"
   }
 }
 ```
 
-### Files
-
-#### POST `/files/upload`
-Upload a file.
-
-**Request:** `multipart/form-data`
-- `file`: The file to upload
-
 **Response:**
 ```json
 {
-  "success": true,
+  "id": "branch-1234567890",
+  "conversationId": "conv-1234567890",
+  "name": "Deep Dive Branch",
+  "parentId": "main",
   "data": {
-    "id": "uuid",
-    "originalName": "document.pdf",
-    "fileName": "uuid-document.pdf",
-    "mimeType": "application/pdf",
-    "size": 1024000,
-    "url": "/uploads/uuid-document.pdf"
-  }
+    "description": "Exploring a specific aspect in detail"
+  },
+  "isActive": false,
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z"
 }
 ```
 
-#### GET `/files/:id`
-Get file information.
+#### PUT `/api/conversations/:conversationId/branches/:branchId/activate`
+Switch to a different branch in a conversation.
 
 **Response:**
 ```json
 {
   "success": true,
-  "data": {
-    "id": "uuid",
-    "originalName": "document.pdf",
-    "fileName": "uuid-document.pdf",
-    "mimeType": "application/pdf",
-    "size": 1024000,
-    "uploadedAt": "2024-01-01T00:00:00.000Z"
-  }
+  "activeBranch": "branch-1234567890"
 }
 ```
 
-#### DELETE `/files/:id`
-Delete a file.
+## Context System
 
-**Response:**
-```json
-{
-  "success": true,
-  "message": "File deleted successfully"
-}
+The API features an advanced context system that maintains conversation coherence:
+
+### Context Format
+
+The `context` parameter in `/api/chat` should follow this format:
+
+```
+--- İlgili Önceki Sorular ---
+Kullanıcı: [Previous question 1]
+Asistan: [Previous answer 1]
+Kullanıcı: [Previous question 2]
+Asistan: [Previous answer 2]
+
+--- Devam Edilen Konu ---
+Kullanıcı: [Current question 1]
+Asistan: [Current answer 1]
+Soru: [Related question]
+Cevap: [Related answer]
 ```
 
-### Settings
+### Context Processing Rules
 
-#### GET `/settings`
-Get user settings.
+1. **System Message**: A Turkish system prompt is automatically added to provide context-aware responses
+2. **Previous Questions**: Marked with `[Önceki Soru]` and `[Önceki Cevap]` prefixes
+3. **Related Questions**: Marked with `[İlgili Soru]` and `[İlgili Cevap]` prefixes
+4. **Current Messages**: Added without prefixes for the main conversation flow
 
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "theme": "dark",
-    "language": "en",
-    "notifications": {
-      "email": true,
-      "push": true,
-      "workflow": true,
-      "chat": true
-    },
-    "llm": {
-      "defaultProvider": "openai",
-      "defaultModel": "gpt-4",
-      "temperature": 0.7,
-      "maxTokens": 2000
-    },
-    "ui": {
-      "sidebarCollapsed": false,
-      "showMinimap": true,
-      "snapToGrid": true,
-      "gridSpacing": 15
-    }
-  }
-}
-```
+## Error Handling
 
-#### PUT `/settings`
-Update user settings.
+All errors return appropriate HTTP status codes and descriptive messages:
 
-**Request Body:** Same structure as GET response
-
-**Response:** Same as GET response
-
-## WebSocket Events
-
-### Client to Server
-
-#### `workflow:execute`
-Execute a workflow.
-```json
-{
-  "workflowId": "uuid",
-  "inputs": {},
-  "options": {}
-}
-```
-
-#### `workflow:pause`
-Pause a workflow execution.
-```json
-{
-  "executionId": "uuid"
-}
-```
-
-#### `workflow:stop`
-Stop a workflow execution.
-```json
-{
-  "executionId": "uuid"
-}
-```
-
-#### `chat:send`
-Send a chat message.
-```json
-{
-  "sessionId": "uuid",
-  "content": "Hello!",
-  "context": {}
-}
-```
-
-### Server to Client
-
-#### `workflow:started`
-Workflow execution started.
-```json
-{
-  "executionId": "uuid",
-  "workflowId": "uuid",
-  "startedAt": "2024-01-01T00:00:00.000Z"
-}
-```
-
-#### `workflow:progress`
-Workflow execution progress update.
-```json
-{
-  "executionId": "uuid",
-  "nodeId": "uuid",
-  "status": "running",
-  "progress": 0.5,
-  "message": "Processing..."
-}
-```
-
-#### `workflow:completed`
-Workflow execution completed.
-```json
-{
-  "executionId": "uuid",
-  "outputs": {},
-  "completedAt": "2024-01-01T00:00:00.000Z",
-  "duration": 5000
-}
-```
-
-#### `workflow:error`
-Workflow execution error.
-```json
-{
-  "executionId": "uuid",
-  "error": "Something went wrong",
-  "nodeId": "uuid",
-  "timestamp": "2024-01-01T00:00:00.000Z"
-}
-```
-
-#### `chat:message`
-New chat message received.
-```json
-{
-  "sessionId": "uuid",
-  "message": {
-    "id": "uuid",
-    "role": "assistant",
-    "content": "Response message",
-    "timestamp": "2024-01-01T00:00:00.000Z"
-  }
-}
-```
-
-## Error Responses
-
-All errors follow this format:
+### Common Error Responses
 
 ```json
 {
-  "success": false,
-  "error": "ERROR_CODE",
-  "message": "Human readable error message",
-  "details": {}
+  "error": "Failed to process chat message"
 }
 ```
 
-### Common Error Codes
+```json
+{
+  "error": "Failed to create workflow"
+}
+```
 
-- `VALIDATION_ERROR`: Invalid request data
-- `AUTHENTICATION_ERROR`: Invalid or missing authentication
-- `AUTHORIZATION_ERROR`: Insufficient permissions
-- `NOT_FOUND`: Resource not found
-- `CONFLICT`: Resource already exists
-- `RATE_LIMIT_EXCEEDED`: Too many requests
-- `INTERNAL_SERVER_ERROR`: Server error
-- `WORKFLOW_EXECUTION_ERROR`: Workflow execution failed
-- `LLM_PROVIDER_ERROR`: LLM provider error
+```json
+{
+  "error": "Failed to create conversation"
+}
+```
+
+### HTTP Status Codes
+
+- `200` - Success
+- `400` - Bad Request (validation errors)
+- `500` - Internal Server Error
+- `404` - Not Found
+
+## Technology Stack
+
+- **Backend**: Node.js with Express
+- **AI Provider**: Groq API (Llama 3.1-8b-instant)
+- **Database**: PostgreSQL (optional for simple-server)
+- **Language**: Turkish and English support
+
+## Features
+
+### AI Integration
+- Free Groq API with Llama 3.1 model
+- Intelligent conversation context awareness
+- Fallback error handling
+- Turkish language support
+
+### Context Management
+- Maintains conversation flow across questions and answers
+- Remembers related questions from the same branch
+- Provides topic coherence for intelligent responses
+- Supports multi-branch conversations with independent contexts
+
+### Visual Thinking Map
+- Interactive canvas with draggable nodes
+- SVG connections showing relationships
+- Click-to-position for new nodes
+- Real-time AI responses
+
+## Usage Examples
+
+### Basic Chat
+```bash
+curl -X POST http://localhost:3002/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "What is machine learning?",
+    "model": "llama-3.1-8b-instant",
+    "conversationId": "conv-demo",
+    "branchId": "main"
+  }'
+```
+
+### Chat with Context
+```bash
+curl -X POST http://localhost:3002/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "Can you explain neural networks in more detail?",
+    "model": "llama-3.1-8b-instant",
+    "conversationId": "conv-demo",
+    "branchId": "main",
+    "context": "--- İlgili Önceki Sorular ---\nKullanıcı: What is machine learning?\nAsistan: Machine learning is a subset of AI that focuses on systems that learn from data...\n--- Devam Edilen Konu ---\nKullanıcı: Tell me about deep learning\nAsistan: Deep learning is a subfield of machine learning that uses neural networks..."
+  }'
+```
+
+### Create Conversation
+```bash
+curl -X POST http://localhost:3002/api/conversations \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "AI Learning Session",
+    "userId": "user-demo"
+  }'
+```
 
 ## Rate Limiting
 
-- **General API**: 100 requests per 15 minutes per IP
-- **File Upload**: 10 uploads per minute per user
-- **Workflow Execution**: 20 executions per hour per user
-- **WebSocket Events**: 1000 events per minute per connection
+Currently, there are no strict rate limits implemented in the simple-server, but it's recommended to:
 
-## File Upload Limits
+- Limit requests to reasonable frequency
+- Implement client-side rate limiting
+- Handle errors gracefully with retry logic
 
-- **Max File Size**: 10MB
-- **Supported Formats**: Images (PNG, JPG, GIF, SVG), Documents (PDF, DOC, DOCX, TXT), Data (JSON, CSV)
-- **Storage**: User-specific with configurable limits
+## Configuration
+
+The API uses environment variables for configuration:
+
+- `GROQ_API_KEY`: Groq API key for LLM integration
+- `GROQ_API_URL`: Groq API endpoint (default: https://api.groq.com/openai/v1/chat/completions)
+- `PORT`: Server port (default: 3001)
+- `DATABASE_URL`: PostgreSQL connection string
+- `CORS_ORIGIN`: Allowed CORS origins
+
+## Future Enhancements
+
+Planned features for future releases:
+
+- User authentication and authorization
+- Workflow execution engine
+- File upload support
+- Real-time WebSocket connections
+- Advanced node types and configurations
+- Template system
+- Collaboration features
