@@ -3,7 +3,7 @@ export class ConversationApiService {
   private baseUrl: string;
 
   constructor(threadId: string | null = null) {
-    this.baseUrl = 'http://localhost:3001/api';
+    this.baseUrl = 'http://localhost:3002/api';
   }
 
   async createBranch(options: any) {

@@ -3,7 +3,7 @@ import React from 'react';
 const WorkflowDemo: React.FC = () => {
   const handleOpenEditor = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/workflows', {
+      const response = await fetch('http://localhost:3002/api/workflows', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -23,7 +23,7 @@ const WorkflowDemo: React.FC = () => {
         alert('❌ Workflow oluşturulamadı.');
       }
     } catch (error) {
-      alert('⚠️ Backend bağlantısı başarısız!\n\nBackend sunucusunun http://localhost:3001 adresinde çalıştığından emin olun.');
+      alert('⚠️ Backend bağlantısı başarısız!\n\nBackend sunucusunun http://localhost:3002 adresinde çalıştığından emin olun.');
     }
   };
 

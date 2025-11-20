@@ -214,7 +214,7 @@ const VisualThinkingMap: React.FC = () => {
 
     try {
       // Get AI response
-      const response = await fetch('http://localhost:3001/api/chat', {
+      const response = await fetch('http://localhost:3002/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -325,7 +325,7 @@ const VisualThinkingMap: React.FC = () => {
       const context = buildConversationContext(nodeId);
       console.log('Context for node:', nodeId, context);
       
-      const response = await fetch('http://localhost:3001/api/chat', {
+      const response = await fetch('http://localhost:3002/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -379,7 +379,7 @@ const VisualThinkingMap: React.FC = () => {
       // Build conversation context for this node
       const context = buildConversationContext(nodeId);
       
-      const response = await fetch('http://localhost:3001/api/chat', {
+      const response = await fetch('http://localhost:3002/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

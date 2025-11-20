@@ -17,7 +17,7 @@ export class WebSocketService {
 
   constructor(options: WebSocketServiceOptions = {}) {
     this.options = {
-      url: options.url || import.meta.env.VITE_WS_URL || 'ws://localhost:3001',
+      url: options.url || import.meta.env.VITE_WS_URL || 'ws://localhost:3002',
       token: options.token || '',
       autoReconnect: options.autoReconnect ?? true,
       reconnectAttempts: options.reconnectAttempts ?? 5,

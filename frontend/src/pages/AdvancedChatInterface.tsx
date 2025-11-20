@@ -51,7 +51,7 @@ const AdvancedChatInterface: React.FC = () => {
 
   const loadConversation = async () => {
     try {
-      const response = await fetch(`http://localhost:3001/api/conversations/${conversationId}`);
+      const response = await fetch(`http://localhost:3002/api/conversations/${conversationId}`);
       if (response.ok) {
         const data = await response.json();
         setConversation(data);
@@ -85,7 +85,7 @@ const AdvancedChatInterface: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3001/api/chat', {
+      const response = await fetch('http://localhost:3002/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -117,7 +117,7 @@ const AdvancedChatInterface: React.FC = () => {
     if (!newBranchName.trim()) return;
 
     try {
-      const response = await fetch(`http://localhost:3001/api/conversations/${conversationId}/branches`, {
+      const response = await fetch(`http://localhost:3002/api/conversations/${conversationId}/branches`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -139,7 +139,7 @@ const AdvancedChatInterface: React.FC = () => {
 
   const switchBranch = async (branchId: string) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/conversations/${conversationId}/branches/${branchId}/activate`, {
+      const response = await fetch(`http://localhost:3002/api/conversations/${conversationId}/branches/${branchId}/activate`, {
         method: 'PUT'
       });
 
