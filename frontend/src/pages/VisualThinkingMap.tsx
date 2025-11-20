@@ -270,9 +270,16 @@ const VisualThinkingMap: React.FC = () => {
     };
     
     // İlgili kardeş soruları ve cevapları bul (aynı parent'a sahip olanlar)
+    // AMA SADECE ana düğüm DEĞİLSE - yani yan dallardaysa ilgili diğer dalları göster
     const findRelatedConversations = (nodeId: string): void => {
       const currentNode = nodes.find(n => n.id === nodeId);
       if (!currentNode || !currentNode.parent) return;
+      
+      // Eğer parent ana başlangıç düğümü ise, yan dalları gösterme
+      if (currentNode.parent === 'start') {
+        console.log('Parent is start node, skipping related conversations');
+        return;
+      }
       
       const parentNode = nodes.find(n => n.id === currentNode.parent);
       if (!parentNode) return;
@@ -303,7 +310,7 @@ const VisualThinkingMap: React.FC = () => {
     
     console.log('Building enhanced context for node:', nodeId);
     
-    // İlgili kardeş konuşmaları ekle
+    // İlgili kardeş konuşmaları ekle (ancak ana düğümde değilse)
     findRelatedConversations(nodeId);
     
     // Ana konuşma yolunu ekle
