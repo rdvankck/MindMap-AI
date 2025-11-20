@@ -566,7 +566,7 @@ const VisualThinkingMap: React.FC = () => {
           <h2 style={{ margin: 0, color: '#333' }}>🧠 Görsel Düşünce Haritası</h2>
         </div>
         
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', paddingRight: '20px' }}>
           <button
             onClick={() => {
               setIsAddingNode(!isAddingNode);
