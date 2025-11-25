@@ -219,4 +219,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **API Documentation**: [View Documentation](docs/API.md)
 - **Issues**: [GitHub Issues](https://github.com/rdvankck/MindMap-AI/issues)
 
---
+---
