@@ -10,6 +10,7 @@ An intelligent visual thinking map application that allows users to create branc
 - **🌿 Branching Conversations**: Create multiple conversation branches from any node
 - **💬 Chat Interface**: Modern chat bubble style for AI responses
 - **🎯 Click Positioning**: Choose where new nodes appear on the canvas
+- **🚀 Unlimited Scrolling**: Expanded canvas with 4-directional navigation controls
 - **⚡ Real-time**: Immediate AI responses with smooth animations
 - **🎨 Modern UI**: Clean, responsive interface with drag-and-drop support
 
@@ -85,6 +86,7 @@ Get your free Groq API key from [https://console.groq.com/keys](https://console.
 4. **Use the + button** on answer nodes to add follow-up questions
 5. **Create branches** to explore different aspects of your topic
 6. **Drag nodes** to organize your thinking map
+7. **Navigate the canvas** using unlimited scrolling controls
 
 ## 🧠 Context System
 
@@ -95,6 +97,28 @@ The application features an advanced context system that:
 - **Provides topic coherence** for intelligent responses
 - **Supports multi-branch conversations** with independent contexts
 - **Separates main topic** from branch contexts for focused discussions
+
+## 🚀 Canvas Navigation
+
+The application features an advanced canvas navigation system with unlimited scrolling capabilities:
+
+### Navigation Controls
+- **🎮 Directional Buttons**: Four-directional navigation buttons (up, down, left, right) in the toolbar
+- **🖱️ Mouse Wheel**: Normal vertical scrolling with mouse wheel
+- **⚡ Shift+Wheel**: 5x faster horizontal scrolling with Shift key
+- **🤏 Drag & Pan**: Click and drag empty canvas space to pan around
+
+### Canvas Specifications
+- **📐 Massive Canvas Area**: 500vw × 500vh (50,000px minimum)
+- **🔍 Extreme Zoom**: 0.01x to 5x zoom levels
+- **🎯 Smooth Scrolling**: 2,000px scroll increments with smooth animations
+- **♾️ Unlimited Space**: Virtually unlimited workspace for complex mind maps
+
+### Keyboard Shortcuts
+- **Shift + Mouse Wheel**: Fast horizontal scrolling
+- **Mouse Wheel**: Vertical scrolling  
+- **Click & Drag**: Pan canvas freely
+- **Ctrl/Cmd + Scroll**: Zoom in/out
 
 ## 🛠️ Technology Stack
 
@@ -119,6 +143,14 @@ The application features an advanced context system that:
 - Draggable nodes with smooth animations
 - SVG connections showing relationships
 - Click-to-position for new nodes
+- Unlimited scrolling workspace
+
+### Canvas Navigation
+- Four-directional navigation controls (up, down, left, right)
+- Massive canvas area (500vw × 500vh)
+- Extreme zoom levels (0.01x to 5x)
+- Smooth scrolling with 2,000px increments
+- Multiple input methods (buttons, mouse wheel, drag & pan)
 
 ### AI Integration
 - Free Groq API with Llama 3.1 model
