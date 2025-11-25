@@ -33,7 +33,11 @@ import {
   Layers,
   HelpCircle,
   Settings,
-  RotateCcw
+  RotateCcw,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  ChevronDown
 } from 'lucide-react';
 
 import { useFlowStore, useAppStore } from '../store';
@@ -363,8 +367,68 @@ const FlowCanvas: React.FC = () => {
     input.click();
   }, [loadWorkflow]);
 
+  // Handle horizontal scrolling
+  const handleHorizontalScroll = useCallback((direction: 'left' | 'right') => {
+    const scrollAmount = 2000; // Daha da artırılmış kaydırma miktarı
+    const wrapper = reactFlowWrapper.current;
+    if (wrapper) {
+      const currentScroll = wrapper.scrollLeft;
+      const targetScroll = direction === 'left' 
+        ? currentScroll - scrollAmount 
+        : currentScroll + scrollAmount;
+      
+      wrapper.scrollTo({
+        left: targetScroll,
+        behavior: 'smooth'
+      });
+    }
+  }, []);
+
+  // Handle vertical scrolling
+  const handleVerticalScroll = useCallback((direction: 'up' | 'down') => {
+    const scrollAmount = 2000; // Dikey kaydırma miktarı
+    const wrapper = reactFlowWrapper.current;
+    if (wrapper) {
+      const currentScroll = wrapper.scrollTop;
+      const targetScroll = direction === 'up' 
+        ? currentScroll - scrollAmount 
+        : currentScroll + scrollAmount;
+      
+      wrapper.scrollTo({
+        top: targetScroll,
+        behavior: 'smooth'
+      });
+    }
+  }, []);
+
+  // Handle mouse wheel horizontal and vertical scrolling
+  useEffect(() => {
+    const wrapper = reactFlowWrapper.current;
+    if (!wrapper) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      if (e.shiftKey) {
+        e.preventDefault();
+        // Shift+Wheel için çok daha hızlı yatay kaydırma
+        wrapper.scrollLeft += e.deltaY * 5;
+      } else {
+        // Normal wheel için hem yatay hem dikey kaydırma
+        wrapper.scrollLeft += e.deltaX * 2;
+        // Dikey kaydırma için wrapper'ın parent'ını kullan
+        const parent = wrapper.parentElement;
+        if (parent && e.deltaY !== 0) {
+          e.preventDefault();
+          parent.scrollTop += e.deltaY * 2;
+        }
+      }
+    };
+
+    wrapper.addEventListener('wheel', handleWheel, { passive: false });
+    return () => wrapper.removeEventListener('wheel', handleWheel);
+  }, []);
+
   return (
-    <div className="w-full h-full relative" ref={reactFlowWrapper}>
+    <div className="w-full h-full relative overflow-auto" ref={reactFlowWrapper}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -379,12 +443,28 @@ const FlowCanvas: React.FC = () => {
         snapToGrid={snapToGrid}
         snapGrid={[gridSpacing, gridSpacing]}
         defaultViewport={{ x: 0, y: 0, zoom: 1 }}
-        fitView
+        fitView={false}
         attributionPosition="bottom-left"
         className={cn(
           'bg-gray-50',
           snapToGrid && 'bg-grid'
         )}
+        minZoom={0.01}
+        maxZoom={5}
+        panOnScroll={false}
+        panOnDrag={true}
+        panOnScrollMode="free"
+        selectionOnDrag={false}
+        connectOnDrag={false}
+        elementsSelectable={true}
+        draggable={true}
+        maxBounds={{ x: 50000, y: 50000, width: 100000, height: 100000 }}
+        style={{ 
+          width: '500vw', 
+          height: '500vh',
+          minWidth: '50000px',
+          minHeight: '50000px'
+        }}
       >
         <Background 
           color="#e5e7eb" 
@@ -504,6 +584,43 @@ const FlowCanvas: React.FC = () => {
                 <Layers className="w-4 h-4" />
               </button>
             </div>
+
+            {/* Navigation Controls */}
+            <div className="flex items-center space-x-1 border-l border-gray-200 pl-2">
+              {/* Vertical Controls */}
+              <div className="flex flex-col items-center space-y-1">
+                <button
+                  onClick={() => handleVerticalScroll('up')}
+                  className="p-2 hover:bg-gray-100 rounded flex items-center space-x-1 text-gray-600"
+                  title="Scroll up"
+                >
+                  <ChevronUp className="w-4 h-4" />
+                </button>
+                <div className="flex space-x-1">
+                  <button
+                    onClick={() => handleHorizontalScroll('left')}
+                    className="p-2 hover:bg-gray-100 rounded flex items-center space-x-1 text-gray-600"
+                    title="Scroll left (Shift + Wheel)"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleHorizontalScroll('right')}
+                    className="p-2 hover:bg-gray-100 rounded flex items-center space-x-1 text-gray-600"
+                    title="Scroll right (Shift + Wheel)"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+                <button
+                  onClick={() => handleVerticalScroll('down')}
+                  className="p-2 hover:bg-gray-100 rounded flex items-center space-x-1 text-gray-600"
+                  title="Scroll down"
+                >
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
           </div>
         </Panel>
 
@@ -548,6 +665,18 @@ const FlowCanvas: React.FC = () => {
             <div className="flex justify-between">
               <span>Select All:</span>
               <kbd className="px-1 py-0.5 bg-gray-100 rounded">Ctrl+A</kbd>
+            </div>
+            <div className="flex justify-between">
+              <span>Horizontal Scroll:</span>
+              <kbd className="px-1 py-0.5 bg-gray-100 rounded">Shift+Wheel</kbd>
+            </div>
+            <div className="flex justify-between">
+              <span>Vertical Scroll:</span>
+              <kbd className="px-1 py-0.5 bg-gray-100 rounded">Wheel</kbd>
+            </div>
+            <div className="flex justify-between">
+              <span>Pan Canvas:</span>
+              <kbd className="px-1 py-0.5 bg-gray-100 rounded">Drag</kbd>
             </div>
           </div>
         </Panel>

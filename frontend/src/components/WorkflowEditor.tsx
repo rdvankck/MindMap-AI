@@ -383,6 +383,10 @@ const WorkflowEditor: React.FC<WorkflowEditorProps> = ({
                       <span className="text-gray-600">Paste:</span>
                       <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">Ctrl+V</kbd>
                     </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Horizontal scroll:</span>
+                      <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">Shift+Wheel</kbd>
+                    </div>
                   </div>
                 </div>
               </div>
